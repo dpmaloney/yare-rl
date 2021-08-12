@@ -26,6 +26,7 @@ TICKFN = CFUNCTYPE(None, c_ulong)
 class YareBindings:
     def __init__(self):
         yare_lib = os.path.join(os.path.dirname(os.path.abspath(__file__)), "yareio.dll")
+        # TODO: allow to load library for Windows, Linux (and MacOS?)
         self.lib = WinDLL(name=str(yare_lib))
 
         # Headless functions

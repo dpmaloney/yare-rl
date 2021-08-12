@@ -1,0 +1,5 @@
+env: "yare"
+log_level: "WARN"
+framework: "tf"
+num_gpus: 1
+num_workers: 5 

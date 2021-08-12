@@ -2,24 +2,21 @@ import argparse
 
 import gym
 
-from env import YareEnv
+from envs.baseEnv import BaseEnv
 from policies import RandomPolicy
 
 
 def random_baseline(env: gym.Env) -> None:
-    policy = RandomPolicy(env.action_spaces)
-    while True:
+    # policy = RandomPolicy(env.action_spaces) TODO: implement observation space
+    # training loop
+    while True: 
         observations = env.reset()
-        max_steps: int = 10000
-        for _ in range(max_steps):
-            actions = {} # {agent: policy.get_action(observations[agent], agent) for agent in env.agents}
+         # episode loop
+        while True:
+            actions = {} # TODO: policy is not valid yet to pass {agent: policy.get_action(observations[agent], agent) for agent in env.agents}
             observations, rewards, done, infos = env.step(actions)
-            if done:
+            if done["__all__"]:
                 break
-
-
-def bot1_fn(env, tick):
-    print(tick, env.spirit_position(0).x, env.spirit_position(0).y)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -29,6 +26,11 @@ if __name__ == "__main__":
                         help="Shape of player 2's spirits")
     args = parser.parse_args()
 
-    env = YareEnv(args.shape_0, args.shape_1, bot1_fn)
+
+    def print_pos(env, tick):
+        print(tick, env.spirit_position(0).x, env.spirit_position(0).y)
+        return
+
+    env = BaseEnv("replay.json", [args.shape_0, args.shape_1], [print_pos, print_pos])
 
     random_baseline(env)

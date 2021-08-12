@@ -1,2 +1,2 @@
 gym
-pettingzoo[butterfly]
+ray[rllib]
