@@ -1,5 +1,5 @@
 from typing import Union, Callable
-from ctypes import c_uint
+from ctypes import c_uint, c_char_p
 
 import gym
 
@@ -46,6 +46,7 @@ class YareEnv(gym.Env):
         self.env.headless_gather_commands(self.yare_ptr, c_uint(0))
         self.env.headless_gather_commands(self.yare_ptr, c_uint(1))
         result: int = self.env.headless_process_commands(self.yare_ptr).result
+        return None, None, False, None
 
 
     def reset(self) -> dict:
@@ -81,8 +82,8 @@ class YareEnv(gym.Env):
             print(self.env.spirit_position(0).x, self.env.spirit_position(0).y)
             return
 
-        bot1 = TICKFN(print_pos)
-        bot2 = TICKFN(print_pos)
+        self.bot1 = TICKFN(print_pos)
+        self.bot2 = TICKFN(print_pos)
         i = c_uint(0)
-        self.yare_ptr = self.env.headless_init(bot1, i, bot2, i)
+        self.yare_ptr = self.env.headless_init(self.bot1, i, self.bot2, i, c_char_p(b"replay.json"))
         print("ptr", self.yare_ptr)

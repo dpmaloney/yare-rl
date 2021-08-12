@@ -13,9 +13,8 @@ def random_baseline(env: gym.Env) -> None:
         max_steps: int = 10000
         for _ in range(max_steps):
             actions = {} # {agent: policy.get_action(observations[agent], agent) for agent in env.agents}
-            observations, rewards, dones, infos = env.step(actions)
-            env.render()
-            if all(dones):
+            observations, rewards, done, infos = env.step(actions)
+            if done:
                 break
 
 
