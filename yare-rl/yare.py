@@ -1,8 +1,13 @@
 # ctypes_test.py
 from ctypes import *
 import pathlib
+from os import uname
 libname = pathlib.Path().absolute() / "yare_rust.dll"
-lib = WinDLL(name=str(libname))
+if uname()[0] == 'Darwin':
+    libname = pathlib.Path().absolute() / "libyareio.dylib"
+    
+
+lib = CDLL(name=str(libname))
 class Vec2(Structure):
     _fields_ = [("x", c_float),
                 ("y", c_float)]
@@ -13,8 +18,8 @@ class Vec2(Structure):
 #           1 player 1 won
 #           2 draw (game timed out)
 class SimResult(Structure):
-    _fields_ = [("tick", c_ulong),
-                ("result", c_long)]
+    _fields_ = [("tick", c_uint),
+                ("result", c_int)]
 
 class Id(Structure):
     _fields_ = [("player_id", c_uint),
@@ -25,7 +30,7 @@ TICKFN = CFUNCTYPE(None, c_ulong)
 # Headless functions
 lib.headless_simulate.argtypes = [TICKFN, c_uint, TICKFN, c_uint]
 lib.headless_simulate.restype = SimResult
-lib.headless_init.argtypes = [TICKFN, c_uint, TICKFN, c_uint]
+lib.headless_init.argtypes = [TICKFN, c_uint, TICKFN, c_uint, c_char_p]
 lib.headless_init.restype = c_void_p
 lib.headless_update_env.argtypes = [c_void_p]
 lib.headless_update_env.restype = None
@@ -62,7 +67,7 @@ lib.spirit_energize_outpost.argtypes = [c_uint, c_uint]
 lib.spirit_energize_outpost.restype = None
 lib.spirit_energize.argtypes = [c_uint, c_uint]
 lib.spirit_energize.restype = None
-lib.spirit_goto.argtypes = [c_uint]
+lib.spirit_goto.argtypes = [c_uint, c_float, c_float]
 lib.spirit_goto.restype = None
 
 # Shape Specific Commands
@@ -117,17 +122,29 @@ lib.base_player_id.restype = c_uint
 lib.base_position.argtypes = [c_uint]
 lib.base_position.restype = Vec2
 
+# Player
+lib.player_me.argtypes = []
+lib.player_me.restype = c_uint
+
+
 
 
 def test(x):
     print(lib.spirit_position(0).x, lib.spirit_position(0).y)
+
+    for i in range(lib.spirit_count()):
+        print(lib.spirit_position(i).x, lib.spirit_position(i).y)
+        print(lib.spirit_id(i).player_id)
+        print(lib.player_me())
+        if(lib.spirit_id(i).player_id == lib.player_me()):
+           lib.spirit_goto(i, 1500.0, 1500.0)
     return
 
 if __name__ == "__main__":
     bot1 = TICKFN(test)
     bot2 = TICKFN(test)
     i = c_uint(0)
-    ptr = lib.headless_init(bot1, i, bot2, i)
+    ptr = lib.headless_init(bot1, i, bot2, i, create_string_buffer(b"replay.json"))
     res = None
     result = -1
     while result < 0:
